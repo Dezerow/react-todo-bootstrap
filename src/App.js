@@ -6,12 +6,17 @@ import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Modal from "react-bootstrap/Modal";
+import Alert from "react-bootstrap/Alert";
 
 function App() {
   const [todo, setTodo] = useState("");
   const [todoTable, setTodoTable] = useState([]);
   const [count, setCount] = useState(0);
-  const [show, setShow] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [idToEdit, setIdToEdit] = useState("");
+  const [nameOfEdit, setNameOfEdit] = useState("");
+  const [todoEdit, setTodoEdit] = useState("");
 
   function setDate() {
     let createDate = new Date();
@@ -23,7 +28,7 @@ function App() {
       : (hour = `0${createDate.getHours()}`);
     createDate.getMinutes() >= 10
       ? (minutes = createDate.getMinutes())
-      : (minutes = `0${createDate.getMinutes}}`);
+      : (minutes = `0${createDate.getMinutes()}`);
 
     let fullHour = `${hour}:${minutes}`;
 
@@ -41,7 +46,7 @@ function App() {
 
   const handleSubmit = () => {
     if (!todo) {
-      setShow(true);
+      setShowAlert(true);
       return null;
     }
 
@@ -56,6 +61,7 @@ function App() {
 
     setTodoTable((prevState) => [...prevState, quest]);
     setTodo("");
+    setShowAlert(false);
   };
 
   const handleDelete = (id) => {
@@ -77,7 +83,23 @@ function App() {
     setTodoTable(tableCopy);
   };
 
-  const handleClose = () => setShow(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = (id) => {
+    setShowModal(true);
+    setIdToEdit(id);
+    setNameOfEdit(todoTable[id].purpose);
+  };
+
+  const handleEdit = () => {
+    todoTable.map((task) => {
+      if (task.id === idToEdit) {
+        task.purpose = todoEdit;
+      }
+      setTodoEdit("");
+      setShowModal(false);
+      return null;
+    });
+  };
 
   return (
     <Container>
@@ -85,18 +107,38 @@ function App() {
         <h1>Lista zadań</h1>
       </Card>
 
-      <Modal show={show} onHide={handleClose}>
+      <Alert
+        variant="danger"
+        show={showAlert}
+        onClose={() => setShowAlert(false)}
+        dismissible
+      >
+        <Alert.Heading>Błąd przy uzupełnianiu pola.</Alert.Heading>
+        <p>
+          Aby zatwierdzić dodanie nowego zadania, należy wypełnić pole tekstowe.
+        </p>
+      </Alert>
+
+      <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title className="modalTitle">
-            Błąd przy uzupełnianiu pola.
+            Edycja zadania: {nameOfEdit}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="modalBody">
-          Aby zatwierdzić dodanie nowego zadania, należy wypełnić pole tekstowe.
+          <input
+            type="text"
+            value={todoEdit}
+            onChange={(e) => setTodoEdit(e.target.value)}
+            style={{ width: "100%", textAlign: "center" }}
+          ></input>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleClose}>
-            Rozumiem
+          <Button variant="primary" onClick={handleEdit}>
+            Zatwierdź
+          </Button>
+          <Button variant="danger" onClick={handleCloseModal}>
+            Anuluj
           </Button>
         </Modal.Footer>
       </Modal>
@@ -150,6 +192,12 @@ function App() {
                           Wykonane
                         </Button>
                         <Button
+                          variant="success"
+                          onClick={() => handleShowModal(item.id)}
+                        >
+                          Edycja
+                        </Button>
+                        <Button
                           variant="danger"
                           onClick={() => handleDelete(item.id)}
                         >
@@ -187,7 +235,12 @@ function App() {
                         >
                           Niewykonane
                         </Button>
-
+                        <Button
+                          variant="success"
+                          onClick={() => handleShowModal(item.id)}
+                        >
+                          Edycja
+                        </Button>
                         <Button
                           variant="danger"
                           onClick={() => handleDelete(item.id)}
