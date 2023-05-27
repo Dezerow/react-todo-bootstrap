@@ -22,3 +22,11 @@ h2 {
   margin-top: 2%;
   border-bottom: 5px solid lightsteelblue;
 }
+
+.modalBody {
+  color: black;
+}
+
+.modalTitle {
+  color: darkred;
+}
